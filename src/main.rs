@@ -81,6 +81,7 @@ pub struct LevelData {
     pub columns: i32,
     pub rows: i32,
     pub tiles: Vec<TileData>,
+    pub background_img: String,
 }
 
 // --- MAIN ---
@@ -179,12 +180,23 @@ fn spawn_level(
         return;
     }
 
-    // 1. Read and parse the JSON file
     let file_path = format!("assets/levels/level_{}.json", level_res.0);
     let level_data: LevelData = match fs::read_to_string(&file_path) {
         Ok(json_str) => serde_json::from_str(&json_str).expect("Invalid JSON format"),
         Err(_) => return,
     };
+
+    if !level_data.background_img.is_empty() {
+        commands.spawn((
+            Sprite {
+                image: asset_server.load(format!("backgrounds/{}", level_data.background_img)),
+                custom_size: Some(Vec2::new(window.width(), window.height())),
+                ..default()
+            },
+            Transform::from_xyz(0.0, 0.0, -10.0),
+            LevelEntity,
+        ));
+    }
 
     let tile_size = ((window.width()) / level_data.columns as f32)
         .min((window.height()) / level_data.rows as f32);
@@ -240,13 +252,16 @@ fn spawn_level(
             TileType::Concrete => "textures/concrete.png",
         };
 
+        let start_x = bottom_left.x + (tile.position.x as f32 * tile_size) + (tile_size / 2.0);
+        let start_y = bottom_left.y + (tile.position.y as f32 * tile_size) + (tile_size / 2.0);
+
         commands.spawn((
             Sprite {
                 image: asset_server.load(texture_path),
                 custom_size: Some(Vec2::splat(tile_size)),
                 ..default()
             },
-            Transform::from_xyz(0.0, 0.0, -5.0),
+            Transform::from_xyz(start_x, start_y, -5.0),
             tile.position,
             LevelEntity,
         ));

@@ -16,3 +16,7 @@
 
 - Rust
 - Bevy
+
+## Disclaimer
+
+- So far, the graphical side of the project has been largely ignored -> the visuals are quite short of stunning

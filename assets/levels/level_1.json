@@ -19,5 +19,5 @@
         { "position": { "x": 7, "y": 1 }, "tile_type": "Bricks" },
         { "position": { "x": 7, "y": 2 }, "tile_type": "Bricks" }
     ],
-    "background_img": ""
+    "background_img": "level_1.png"
 }
