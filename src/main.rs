@@ -1,6 +1,10 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy::window::WindowMode;
+
+use serde::{Deserialize, Serialize};
+use std::fs;
 
 // --- STATES & RESOURCES ---
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default)]
@@ -10,6 +14,20 @@ pub enum AppState {
     LoadingLevel,
     InGame,
     PopUpMenu,
+}
+
+#[derive(Resource, Default)]
+pub struct GridConfig {
+    pub columns: i32,
+    pub rows: i32,
+    pub tile_size: f32,
+    pub bottom_left: Vec2, // The exact pixel coordinate where the grid starts
+}
+
+#[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GridPosition {
+    pub x: i32,
+    pub y: i32,
 }
 
 #[derive(Resource, Default)]
@@ -39,6 +57,32 @@ pub struct MenuUI;
 #[derive(Component)]
 pub struct PopUpMenuUI;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TileType {
+    Dirt,
+    Rock,
+    Bricks,
+    Concrete,
+}
+
+pub enum BlockType {
+    // TODO: Add different types
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TileData {
+    pub position: GridPosition,
+    pub tile_type: TileType,
+}
+
+// 3. Update LevelData to hold an array of these tiles
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LevelData {
+    pub columns: i32,
+    pub rows: i32,
+    pub tiles: Vec<TileData>,
+}
+
 // --- MAIN ---
 fn main() {
     App::new()
@@ -52,6 +96,7 @@ fn main() {
             ..default()
         }))
         .init_state::<AppState>()
+        .init_resource::<GridConfig>()
         .insert_resource(CurrentLevel(1))
         // Startup
         .add_systems(Startup, spawn_camera)
@@ -63,6 +108,7 @@ fn main() {
         // Main Menu
         .add_systems(OnEnter(AppState::Menu), setup_main_menu)
         .add_systems(Update, main_menu_actions.run_if(in_state(AppState::Menu)))
+        .add_systems(Update, snap_to_grid.run_if(in_state(AppState::InGame)))
         .add_systems(OnExit(AppState::Menu), cleanup_menu)
         // PopUp Menu
         .add_systems(OnEnter(AppState::PopUpMenu), setup_popup_menu)
@@ -77,7 +123,12 @@ fn main() {
         // Gameplay
         .add_systems(
             Update,
-            (check_level_completion, toggle_popup_menu).run_if(in_state(AppState::InGame)),
+            check_level_completion.run_if(in_state(AppState::InGame)),
+        )
+        // The toggle button needs to run in BOTH the game and the menu to flip back and forth
+        .add_systems(
+            Update,
+            toggle_popup_menu.run_if(in_state(AppState::InGame).or(in_state(AppState::PopUpMenu))),
         )
         .run();
 }
@@ -90,29 +141,116 @@ fn spawn_camera(mut commands: Commands) {
 
 // --- GAMEPLAY SYSTEMS ---
 
+/// Automatically translates integer grid coordinates into pixel screen coordinates
+pub fn snap_to_grid(
+    grid_config: Res<GridConfig>,
+    mut query: Query<(&GridPosition, &mut Transform)>,
+) {
+    if grid_config.tile_size == 0.0 {
+        return;
+    }
+
+    for (grid_pos, mut transform) in &mut query {
+        transform.translation.x = grid_config.bottom_left.x
+            + (grid_pos.x as f32 * grid_config.tile_size)
+            + (grid_config.tile_size / 2.0);
+
+        transform.translation.y = grid_config.bottom_left.y
+            + (grid_pos.y as f32 * grid_config.tile_size)
+            + (grid_config.tile_size / 2.0);
+    }
+}
+
 fn spawn_level(
     mut commands: Commands,
-    level: Res<CurrentLevel>,
+    mut level_res: ResMut<CurrentLevel>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
     mut next_state: ResMut<NextState<AppState>>,
 ) {
-    let background_color = match level.0 {
-        1 => Color::srgb(0.2, 0.6, 0.2), // Grass green
-        2 => Color::srgb(0.2, 0.2, 0.6), // Ocean blue
-        3 => Color::srgb(0.6, 0.2, 0.2), // Lava red
-        _ => Color::srgb(0.1, 0.1, 0.1), // Default dark grey
+    let Ok(window) = window_query.single() else {
+        return;
     };
 
-    commands.spawn((
-        Sprite {
-            color: background_color,
-            custom_size: Some(Vec2::new(5000.0, 5000.0)),
-            ..default()
-        },
-        Transform::from_xyz(0.0, 0.0, -100.0),
-        LevelEntity,
-    ));
+    if level_res.0 > 3 {
+        // ! Maybe change into an END SCREEN
+        level_res.0 = 1;
+        next_state.set(AppState::Menu);
+        return;
+    }
 
-    println!("Level {} successfully loaded!", level.0);
+    // 1. Read and parse the JSON file
+    let file_path = format!("assets/levels/level_{}.json", level_res.0);
+    let level_data: LevelData = match fs::read_to_string(&file_path) {
+        Ok(json_str) => serde_json::from_str(&json_str).expect("Invalid JSON format"),
+        Err(_) => return,
+    };
+
+    let tile_size = ((window.width()) / level_data.columns as f32)
+        .min((window.height()) / level_data.rows as f32);
+
+    let grid_width = level_data.columns as f32 * tile_size;
+    let grid_height = level_data.rows as f32 * tile_size;
+
+    let bottom_left = Vec2::new(-grid_width / 2.0, -grid_height / 2.0);
+
+    commands.insert_resource(GridConfig {
+        columns: level_data.columns,
+        rows: level_data.rows,
+        tile_size,
+        bottom_left,
+    });
+
+    let line_color = Color::srgba(1.0, 1.0, 1.0, 0.15);
+    let line_thickness = 1.0;
+
+    // Vertical Lines
+    for x in 0..=level_data.columns {
+        let x_pos = bottom_left.x + (x as f32 * tile_size);
+        commands.spawn((
+            Sprite {
+                color: line_color,
+                custom_size: Some(Vec2::new(line_thickness, grid_height)),
+                ..default()
+            },
+            Transform::from_xyz(x_pos, 0.0, -4.0),
+            LevelEntity,
+        ));
+    }
+
+    // Horizontal Lines
+    for y in 0..=level_data.rows {
+        let y_pos = bottom_left.y + (y as f32 * tile_size);
+        commands.spawn((
+            Sprite {
+                color: line_color,
+                custom_size: Some(Vec2::new(grid_width, line_thickness)),
+                ..default()
+            },
+            Transform::from_xyz(0.0, y_pos, -6.0),
+            LevelEntity,
+        ));
+    }
+
+    for tile in level_data.tiles {
+        let texture_path = match tile.tile_type {
+            TileType::Rock => "textures/rock.png",
+            TileType::Dirt => "textures/dirt.png",
+            TileType::Bricks => "textures/bricks.png",
+            TileType::Concrete => "textures/concrete.png",
+        };
+
+        commands.spawn((
+            Sprite {
+                image: asset_server.load(texture_path),
+                custom_size: Some(Vec2::splat(tile_size)),
+                ..default()
+            },
+            Transform::from_xyz(0.0, 0.0, -5.0),
+            tile.position,
+            LevelEntity,
+        ));
+    }
     next_state.set(AppState::InGame);
 }
 
