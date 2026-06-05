@@ -1,6 +1,6 @@
 {
     "columns": 15,
-    "rows": 9,
+    "rows": 12,
     "tiles": [
         { "position": { "x": 0, "y": 0 }, "tile_type": "Rock" },
         { "position": { "x": 1, "y": 0 }, "tile_type": "Rock" },

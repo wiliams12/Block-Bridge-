@@ -6,9 +6,6 @@
 - a car has to drive across ?
 - limited number of blocks ?
 - preset or random ?
-- special bocks such as "sticky" or "fall-through"
-
-- or give the blocks a price ?
 
 - smooth falling instead of blocky falling
 
