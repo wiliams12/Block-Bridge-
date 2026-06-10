@@ -74,3 +74,13 @@ pub fn cleanup_popup(mut commands: Commands, query: Query<Entity, With<PopUpMenu
         commands.entity(entity).despawn();
     }
 }
+
+pub fn popup_plugin(app: &mut App) {
+    app.add_systems(OnEnter(AppState::PopUpMenu), setup_popup_menu);
+    app.add_systems(Update, popup_actions.run_if(in_state(AppState::PopUpMenu)));
+    app.add_systems(OnExit(AppState::PopUpMenu), cleanup_popup);
+    app.add_systems(
+        Update,
+        toggle_popup_menu.run_if(in_state(AppState::InGame).or(in_state(AppState::PopUpMenu))),
+    );
+}

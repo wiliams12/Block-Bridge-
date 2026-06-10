@@ -4,7 +4,9 @@ use std::collections::HashMap;
 use std::collections::VecDeque;
 
 use crate::modules::general::*;
-use crate::modules::*;
+use crate::modules::grid::*;
+use crate::modules::helpers::*;
+use crate::modules::levels::*;
 
 #[derive(Component, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ShapeId(pub u32);
@@ -332,4 +334,22 @@ pub fn apply_gravity(
             }
         }
     }
+}
+
+pub fn game_plugin(app: &mut App) {
+    app.init_resource::<FallTimer>();
+    app.init_state::<AppState>();
+    app.init_resource::<ActivePlacement>();
+    app.init_resource::<ShapeCounter>();
+    app.init_resource::<NextBlocks>();
+    app.add_systems(
+        Update,
+        (
+            update_placement_state,
+            render_hover_block,
+            place_block,
+            apply_gravity,
+        )
+            .run_if(in_state(AppState::InGame)),
+    );
 }

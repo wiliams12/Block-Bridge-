@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
+use crate::modules::general::*;
+
 #[derive(Resource, Default)]
 pub struct OccupiedGrid(pub HashSet<GridPosition>);
 // ! TODO: Create a serach algorithm for the winning condition
@@ -37,4 +39,10 @@ pub fn snap_to_grid(
             + (grid_pos.y as f32 * grid_config.tile_size)
             + (grid_config.tile_size / 2.0);
     }
+}
+
+pub fn grid_plugin(app: &mut App) {
+    app.init_resource::<GridConfig>();
+    app.init_resource::<OccupiedGrid>();
+    app.add_systems(Update, (snap_to_grid,).run_if(in_state(AppState::InGame)));
 }

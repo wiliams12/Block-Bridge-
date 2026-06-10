@@ -65,3 +65,9 @@ pub fn cleanup_menu(mut commands: Commands, query: Query<Entity, With<MenuUI>>) 
         commands.entity(entity).despawn();
     }
 }
+
+pub fn main_menu_plugin(app: &mut App) {
+    app.add_systems(OnEnter(AppState::Menu), setup_main_menu);
+    app.add_systems(Update, main_menu_actions.run_if(in_state(AppState::Menu)));
+    app.add_systems(OnExit(AppState::Menu), cleanup_menu);
+}

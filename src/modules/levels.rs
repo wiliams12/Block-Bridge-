@@ -211,3 +211,16 @@ pub fn cleanup_level(mut commands: Commands, query: Query<Entity, With<LevelEnti
         commands.entity(entity).despawn();
     }
 }
+
+pub fn levels_plugin(app: &mut App) {
+    app.insert_resource(CurrentLevel(1));
+    app.add_systems(OnEnter(AppState::Menu), cleanup_level);
+    app.add_systems(
+        OnEnter(AppState::LoadingLevel),
+        (cleanup_level, spawn_level).chain(),
+    );
+    app.add_systems(
+        Update,
+        check_level_completion.run_if(in_state(AppState::InGame)),
+    );
+}

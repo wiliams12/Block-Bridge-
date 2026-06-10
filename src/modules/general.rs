@@ -97,3 +97,11 @@ pub fn menu_button(text: &str, action: impl Component) -> impl Bundle {
         )],
     )
 }
+
+pub fn general_plugin(app: &mut App) {
+    app.add_systems(Startup, spawn_camera);
+    app.add_systems(
+        Update,
+        generic_button_hover.run_if(in_state(AppState::Menu).or(in_state(AppState::PopUpMenu))),
+    );
+}

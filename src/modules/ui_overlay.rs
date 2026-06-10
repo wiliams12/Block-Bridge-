@@ -1,6 +1,8 @@
 use crate::modules::game::*;
 use bevy::prelude::*;
 
+use crate::modules::general::*;
+
 #[derive(Component)]
 pub struct NextBlockPreview;
 
@@ -74,4 +76,15 @@ pub fn update_next_blocks_ui(
             commands.entity(shape_container).add_child(tile);
         }
     }
+}
+
+pub fn ui_overlay_plugin(app: &mut App) {
+    app.add_systems(
+        Update,
+        (
+            // <-- ADD THIS so the blocks actually fall!
+            update_next_blocks_ui,
+        )
+            .run_if(in_state(AppState::InGame)),
+    );
 }
