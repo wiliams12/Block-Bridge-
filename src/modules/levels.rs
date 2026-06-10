@@ -39,6 +39,7 @@ pub fn spawn_level(
     mut occupied_grid: ResMut<OccupiedGrid>,
     mut next_blocks: ResMut<NextBlocks>,
     mut placement: ResMut<ActivePlacement>,
+    score: Res<Score>,
 ) {
     let Ok(window) = window_query.single() else {
         return;
@@ -166,21 +167,38 @@ pub fn spawn_level(
         BackgroundColor(Color::srgba(0.08, 0.08, 0.08, 0.95)),
         LevelEntity,
         NextBlocksPanel, // <-- Tag to locate the panel
-        children![(
-            // Header Container
-            Node {
-                margin: UiRect::top(Val::Px(40.0)),
-                ..default()
-            },
-            children![(
-                Text::new("NEXT BLOCKS"),
-                TextFont {
-                    font_size: 30.0,
+        children![
+            (
+                Node {
+                    margin: UiRect::top(Val::Px(40.0)),
                     ..default()
                 },
-                TextColor(Color::WHITE),
-            )]
-        )],
+                children![(
+                    // Be sure to initialize it with 0 (or read from your resource if it persists)
+                    Text::new(format!("SCORE: {}", score.0)),
+                    TextFont {
+                        font_size: 40.0,
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                    ScoreText, // <-- Tag it so the system can find it!
+                )]
+            ),
+            (
+                Node {
+                    margin: UiRect::top(Val::Px(40.0)),
+                    ..default()
+                },
+                children![(
+                    Text::new("NEXT BLOCKS"),
+                    TextFont {
+                        font_size: 30.0,
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                )]
+            )
+        ],
     ));
 
     next_blocks.0.clear();
@@ -198,9 +216,12 @@ pub fn check_level_completion(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut level: ResMut<CurrentLevel>,
     mut next_state: ResMut<NextState<AppState>>,
+    mut score: ResMut<Score>,
+    shape_counter: Res<ShapeCounter>,
 ) {
-    // Simulating a win condition (e.g., reaching a door) by pressing Space
     if keyboard_input.just_pressed(KeyCode::Space) {
+        println!("{}", level.0);
+        score.0 += score_level(shape_counter.0, level.0);
         level.0 += 1;
         next_state.set(AppState::LoadingLevel);
     }

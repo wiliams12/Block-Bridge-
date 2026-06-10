@@ -14,6 +14,11 @@
 - Rust
 - Bevy
 
+## Score system
+
+- the player is awarded score for each placed block
+- and he is awarded score for a finished level with less block being the more valuable option
+
 ## Disclaimer
 
 - So far, the graphical side of the project has been largely ignored -> the visuals are quite short of stunning

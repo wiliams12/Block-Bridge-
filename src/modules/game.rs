@@ -202,8 +202,6 @@ pub fn render_hover_block(
     }
 }
 
-/// 3. Commits the block to the level on Click or Spacebar
-/// Commits the block to the level on Click or Spacebar
 pub fn place_block(
     mut commands: Commands,
     mut placement: ResMut<ActivePlacement>,
@@ -214,6 +212,7 @@ pub fn place_block(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut shape_counter: ResMut<ShapeCounter>,
     mut next_blocks: ResMut<NextBlocks>,
+    mut score: ResMut<Score>,
 ) {
     if !mouse_input.just_pressed(MouseButton::Left) && !keyboard_input.just_pressed(KeyCode::Space)
     {
@@ -274,6 +273,7 @@ pub fn place_block(
     }
 
     next_blocks.0.push_back(get_random_shape());
+    score.0 += 1;
 }
 
 pub fn apply_gravity(
@@ -336,8 +336,16 @@ pub fn apply_gravity(
     }
 }
 
+#[derive(Resource, Default)]
+pub struct Score(pub u32);
+
+pub fn score_level(num_of_shapes: u32, current_level: u32) -> u32 {
+    (100 / num_of_shapes).pow(current_level)
+}
+
 pub fn game_plugin(app: &mut App) {
     app.init_resource::<FallTimer>();
+    app.init_resource::<Score>();
     app.init_state::<AppState>();
     app.init_resource::<ActivePlacement>();
     app.init_resource::<ShapeCounter>();

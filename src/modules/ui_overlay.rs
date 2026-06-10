@@ -9,6 +9,9 @@ pub struct NextBlockPreview;
 #[derive(Component)]
 pub struct NextBlocksPanel;
 
+#[derive(Component)]
+pub struct ScoreText;
+
 pub fn update_next_blocks_ui(
     mut commands: Commands,
     next_blocks: Res<NextBlocks>,
@@ -42,7 +45,7 @@ pub fn update_next_blocks_ui(
                     width: Val::Px(150.0),
                     height: Val::Px(150.0),
                     position_type: PositionType::Absolute,
-                    top: Val::Px(120.0 + (i as f32 * 170.0)), // Space them vertically
+                    top: Val::Px(180.0 + (i as f32 * 170.0)), // Space them vertically
                     // Center inside the 350px panel: (350 - 150) / 2 = 100
                     left: Val::Px(100.0),
                     ..default()
@@ -78,13 +81,21 @@ pub fn update_next_blocks_ui(
     }
 }
 
+pub fn update_score_ui(score: Res<Score>, mut query: Query<&mut Text, With<ScoreText>>) {
+    // Performance optimization: Only reconstruct the string if the score changed
+    if !score.is_changed() {
+        return;
+    }
+
+    if let Ok(mut text) = query.single_mut() {
+        // Assuming your Score resource looks like: pub struct Score(pub u32);
+        text.0 = format!("SCORE: {}", score.0);
+    }
+}
+
 pub fn ui_overlay_plugin(app: &mut App) {
     app.add_systems(
         Update,
-        (
-            // <-- ADD THIS so the blocks actually fall!
-            update_next_blocks_ui,
-        )
-            .run_if(in_state(AppState::InGame)),
+        (update_next_blocks_ui, update_score_ui).run_if(in_state(AppState::InGame)),
     );
 }
