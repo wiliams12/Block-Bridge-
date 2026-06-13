@@ -48,6 +48,7 @@ pub enum TileType {
     Bricks,
     Concrete,
     PlayerBlock,
+    DirtTop,
 }
 
 #[derive(Component)]

@@ -190,7 +190,7 @@ pub fn render_hover_block(
 
             commands.spawn((
                 Sprite {
-                    image: asset_server.load("textures/player_block.png"),
+                    image: asset_server.load("textures/player_block0.png"),
                     color,
                     custom_size: Some(Vec2::splat(grid_config.tile_size)),
                     ..default()
@@ -238,13 +238,7 @@ pub fn place_block(
         return;
     }
 
-    let texture_path = match placement.material {
-        TileType::Rock => "textures/rock.png",
-        TileType::Dirt => "textures/dirt.png",
-        TileType::Bricks => "textures/bricks.png",
-        TileType::Concrete => "textures/concrete.png",
-        TileType::PlayerBlock => "textures/player_block.png",
-    };
+    let texture_path = path_to_material(&placement.material);
 
     // Spawn permanent tiles
     for pos in tiles {

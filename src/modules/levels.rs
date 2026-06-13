@@ -130,13 +130,7 @@ pub fn spawn_level(
     }
 
     for tile in level_data.tiles.iter() {
-        let texture_path = match tile.tile_type {
-            TileType::Rock => "textures/rock.png",
-            TileType::Dirt => "textures/dirt.png",
-            TileType::Bricks => "textures/bricks.png",
-            TileType::Concrete => "textures/concrete.png",
-            TileType::PlayerBlock => "textures/player_block.png",
-        };
+        let texture_path = path_to_material(&tile.tile_type);
 
         let start_x = bottom_left.x + (tile.position.x as f32 * tile_size) + (tile_size / 2.0);
         let start_y = bottom_left.y + (tile.position.y as f32 * tile_size) + (tile_size / 2.0);

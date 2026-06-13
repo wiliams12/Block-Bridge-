@@ -16,12 +16,12 @@
         { "position": { "x": 18, "y": 1 }, "tile_type": "Dirt" },
         { "position": { "x": 19, "y": 1 }, "tile_type": "Rock" },
 
-        { "position": { "x": 0, "y": 2 }, "tile_type": "Concrete" },
-        { "position": { "x": 1, "y": 2 }, "tile_type": "Concrete" },
-        { "position": { "x": 2, "y": 2 }, "tile_type": "Dirt" },
-        { "position": { "x": 17, "y": 2 }, "tile_type": "Dirt" },
-        { "position": { "x": 18, "y": 2 }, "tile_type": "Concrete" },
-        { "position": { "x": 19, "y": 2 }, "tile_type": "Concrete" },
+        { "position": { "x": 0, "y": 2 }, "tile_type": "DirtTop" },
+        { "position": { "x": 1, "y": 2 }, "tile_type": "DirtTop" },
+        { "position": { "x": 2, "y": 2 }, "tile_type": "DirtTop" },
+        { "position": { "x": 17, "y": 2 }, "tile_type": "DirtTop" },
+        { "position": { "x": 18, "y": 2 }, "tile_type": "DirtTop" },
+        { "position": { "x": 19, "y": 2 }, "tile_type": "DirtTop" },
 
         { "position": { "x": 6, "y": 0 }, "tile_type": "Bricks" },
         { "position": { "x": 6, "y": 1 }, "tile_type": "Bricks" },
