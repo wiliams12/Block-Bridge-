@@ -8,6 +8,8 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use serde::{Deserialize, Serialize};
 
+use std::collections::{HashSet, VecDeque};
+
 use std::fs;
 
 #[derive(Resource, Default)]
@@ -49,7 +51,7 @@ pub fn spawn_level(
 
     if level_res.0 > 3 {
         level_res.0 = 1;
-        next_state.set(AppState::Menu); // ! maybe add an end screen
+        next_state.set(AppState::GameEnd);
         return;
     }
 
@@ -212,18 +214,88 @@ pub fn spawn_level(
     next_state.set(AppState::InGame);
 }
 
+// !! Review
+pub fn path_found(points: &Vec<GridPosition>, grid: &OccupiedGrid) -> bool {
+    // If there is 1 or 0 points, they are technically already connected
+    if points.len() <= 1 {
+        return true;
+    }
+
+    // Keep track of which target points we still need to find
+    let mut targets: HashSet<GridPosition> = points.iter().cloned().collect();
+
+    let mut seen: HashSet<GridPosition> = HashSet::new();
+    let mut queue: VecDeque<GridPosition> = VecDeque::new();
+
+    // Start searching from the first point in the list
+    let start = points[0];
+    queue.push_back(start);
+    seen.insert(start);
+    targets.remove(&start);
+
+    while let Some(current) = queue.pop_front() {
+        // Define the 4 cardinal neighbors
+        let neighbors = [
+            GridPosition {
+                x: current.x + 1,
+                y: current.y,
+            },
+            GridPosition {
+                x: current.x - 1,
+                y: current.y,
+            },
+            GridPosition {
+                x: current.x,
+                y: current.y + 1,
+            },
+            GridPosition {
+                x: current.x,
+                y: current.y - 1,
+            },
+        ];
+
+        for neighbor in neighbors {
+            // 1. Is the neighbor an occupied block?
+            // 2. Have we NOT seen it yet? (HashSet::insert returns true if it's new)
+            if grid.0.contains(&neighbor) && seen.insert(neighbor) {
+                queue.push_back(neighbor);
+
+                // If we hit one of our target points, remove it from the required list
+                if targets.remove(&neighbor) && targets.is_empty() {
+                    return true; // We successfully connected all points!
+                }
+            }
+        }
+    }
+
+    // If the queue runs out of options and we still have targets left,
+    // the path is broken.
+    false
+}
+
 pub fn check_level_completion(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut level: ResMut<CurrentLevel>,
     mut next_state: ResMut<NextState<AppState>>,
     mut score: ResMut<Score>,
     shape_counter: Res<ShapeCounter>,
+    grid_config: Res<GridConfig>,
+    occupied_grid: ResMut<OccupiedGrid>,
+    mut transition_timer: ResMut<LevelTransitionTimer>,
+    falling: Res<Falling>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Space) {
-        println!("{}", level.0);
+    let points = vec![
+        GridPosition { x: 0, y: 0 },
+        GridPosition {
+            x: grid_config.columns - 1,
+            y: 0,
+        },
+    ];
+    if path_found(&points, &occupied_grid) && !falling.0 {
         score.0 += score_level(shape_counter.0, level.0);
         level.0 += 1;
-        next_state.set(AppState::LoadingLevel);
+
+        transition_timer.0.reset();
+        next_state.set(AppState::LevelComplete);
     }
 }
 

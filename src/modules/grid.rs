@@ -6,14 +6,13 @@ use crate::modules::general::*;
 
 #[derive(Resource, Default)]
 pub struct OccupiedGrid(pub HashSet<GridPosition>);
-// ! TODO: Create a serach algorithm for the winning condition
 
 #[derive(Resource, Default)]
 pub struct GridConfig {
     pub columns: i32,
     pub rows: i32,
     pub tile_size: f32,
-    pub bottom_left: Vec2, // The exact pixel coordinate where the grid starts
+    pub bottom_left: Vec2, // the offset from the center to the bottom left
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Hash, Eq, Serialize, Deserialize)]

@@ -22,6 +22,7 @@ fn main() {
             main_menu_plugin,
             popup_plugin,
             ui_overlay_plugin,
+            game_end_plugin,
         ))
         .run();
 }

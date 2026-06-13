@@ -15,6 +15,9 @@ pub struct ShapeId(pub u32);
 pub struct NextBlocks(pub VecDeque<ShapeType>);
 
 #[derive(Resource, Default)]
+pub struct Falling(pub bool);
+
+#[derive(Resource, Default)]
 pub struct ShapeCounter(pub u32);
 
 #[derive(Resource)]
@@ -213,6 +216,7 @@ pub fn place_block(
     mut shape_counter: ResMut<ShapeCounter>,
     mut next_blocks: ResMut<NextBlocks>,
     mut score: ResMut<Score>,
+    mut falling: ResMut<Falling>,
 ) {
     if !mouse_input.just_pressed(MouseButton::Left) && !keyboard_input.just_pressed(KeyCode::Space)
     {
@@ -274,23 +278,32 @@ pub fn place_block(
 
     next_blocks.0.push_back(get_random_shape());
     score.0 += 1;
+    falling.0 = true;
 }
 
 pub fn apply_gravity(
+    mut commands: Commands,
     time: Res<Time>,
     mut fall_timer: ResMut<FallTimer>,
     mut occupied_grid: ResMut<OccupiedGrid>,
-    // Only query entities that have a ShapeId (This automatically ignores your static level blocks!)
-    mut query: Query<(&mut GridPosition, &ShapeId)>,
+    mut query: Query<(Entity, &mut GridPosition, &ShapeId)>,
+    mut falling: ResMut<Falling>,
 ) {
     if !fall_timer.0.tick(time.delta()).just_finished() {
         return;
     }
 
-    // 1. Map out all existing shapes
     let mut shapes: HashMap<u32, Vec<GridPosition>> = HashMap::new();
-    for (pos, id) in &query {
-        shapes.entry(id.0).or_default().push(*pos);
+
+    // 1. Map shapes and cull entities that fell below 0
+    for (entity, pos, id) in &query {
+        if pos.y < 0 {
+            // Delete it from memory and despawn the physical sprite
+            occupied_grid.0.remove(&pos);
+            commands.entity(entity).despawn();
+        } else {
+            shapes.entry(id.0).or_default().push(*pos);
+        }
     }
 
     let mut shapes_to_move = Vec::new();
@@ -303,7 +316,7 @@ pub fn apply_gravity(
                 y: pos.y - 1,
             };
 
-            // Rule B: Cannot fall if the tile below is occupied...
+            // RESTORED: Cannot fall if the tile below is occupied...
             // UNLESS the tile occupying it belongs to this exact same shape.
             if occupied_grid.0.contains(&target_pos) && !tiles.contains(&target_pos) {
                 return false;
@@ -320,19 +333,21 @@ pub fn apply_gravity(
     // 3. Move the valid shapes
     if !shapes_to_move.is_empty() {
         // Step A: We MUST erase all old positions from the grid memory first
-        for (pos, id) in &mut query {
+        for (_, pos, id) in &mut query {
             if shapes_to_move.contains(&id.0) {
                 occupied_grid.0.remove(&pos);
             }
         }
 
         // Step B: Update the actual coordinates and write them back into the grid memory
-        for (mut pos, id) in &mut query {
+        for (_, mut pos, id) in &mut query {
             if shapes_to_move.contains(&id.0) {
                 pos.y -= 1;
                 occupied_grid.0.insert(*pos);
             }
         }
+    } else {
+        falling.0 = false;
     }
 }
 
@@ -345,6 +360,7 @@ pub fn score_level(num_of_shapes: u32, current_level: u32) -> u32 {
 
 pub fn game_plugin(app: &mut App) {
     app.init_resource::<FallTimer>();
+    app.init_resource::<Falling>();
     app.init_resource::<Score>();
     app.init_state::<AppState>();
     app.init_resource::<ActivePlacement>();

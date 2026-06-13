@@ -1,4 +1,5 @@
 pub mod game;
+pub mod game_end;
 pub mod general;
 pub mod grid;
 pub mod helpers;
@@ -8,6 +9,7 @@ pub mod popup;
 pub mod ui_overlay;
 
 pub use game::*;
+pub use game_end::*;
 pub use general::*;
 pub use grid::*;
 pub use helpers::*;

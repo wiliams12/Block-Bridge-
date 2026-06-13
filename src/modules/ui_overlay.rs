@@ -12,6 +12,9 @@ pub struct NextBlocksPanel;
 #[derive(Component)]
 pub struct ScoreText;
 
+#[derive(Component)]
+pub struct LevelCompleteOverlay;
+
 pub fn update_next_blocks_ui(
     mut commands: Commands,
     next_blocks: Res<NextBlocks>,
@@ -93,7 +96,50 @@ pub fn update_score_ui(score: Res<Score>, mut query: Query<&mut Text, With<Score
     }
 }
 
+pub fn spawn_level_complete_overlay(mut commands: Commands) {
+    commands
+        .spawn((
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                position_type: PositionType::Absolute,
+                justify_content: JustifyContent::Center, // Centers children horizontally
+                align_items: AlignItems::Center,         // Centers children vertically
+                ..default()
+            },
+            // 0.85 alpha makes it 85% black, 15% transparent
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.85)),
+            ZIndex(100), // Forces this node to the very front of the screen
+            LevelCompleteOverlay,
+        ))
+        .with_child((
+            Text::new("LEVEL CLEARED"),
+            TextFont {
+                font_size: 80.0,
+                ..default()
+            },
+            TextColor(Color::WHITE),
+        ));
+}
+
+pub fn despawn_level_complete_overlay(
+    mut commands: Commands,
+    query: Query<Entity, With<LevelCompleteOverlay>>,
+) {
+    for entity in &query {
+        commands.entity(entity).despawn();
+    }
+}
+
 pub fn ui_overlay_plugin(app: &mut App) {
+    app.add_systems(
+        OnEnter(AppState::LevelComplete),
+        spawn_level_complete_overlay,
+    );
+    app.add_systems(
+        OnExit(AppState::LevelComplete),
+        despawn_level_complete_overlay,
+    );
     app.add_systems(
         Update,
         (update_next_blocks_ui, update_score_ui).run_if(in_state(AppState::InGame)),

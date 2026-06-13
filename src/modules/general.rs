@@ -9,7 +9,12 @@ pub enum AppState {
     LoadingLevel,
     InGame,
     PopUpMenu,
+    LevelComplete,
+    GameEnd,
 }
+
+#[derive(Resource)]
+pub struct LevelTransitionTimer(pub Timer);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShapeType {
@@ -98,7 +103,27 @@ pub fn menu_button(text: &str, action: impl Component) -> impl Bundle {
     )
 }
 
+pub fn tick_transition_timer(
+    time: Res<Time>,
+    mut timer: ResMut<LevelTransitionTimer>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    timer.0.tick(time.delta());
+
+    if timer.0.just_finished() {
+        next_state.set(AppState::LoadingLevel);
+    }
+}
+
 pub fn general_plugin(app: &mut App) {
+    app.insert_resource(LevelTransitionTimer(Timer::from_seconds(
+        1.5,
+        TimerMode::Once,
+    )));
+    app.add_systems(
+        Update,
+        tick_transition_timer.run_if(in_state(AppState::LevelComplete)),
+    );
     app.add_systems(Startup, spawn_camera);
     app.add_systems(
         Update,
