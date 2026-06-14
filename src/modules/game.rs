@@ -282,6 +282,10 @@ pub fn apply_gravity(
     mut occupied_grid: ResMut<OccupiedGrid>,
     mut query: Query<(Entity, &mut GridPosition, &ShapeId)>,
     mut falling: ResMut<Falling>,
+    grid_config: Res<GridConfig>,
+    asset_server: Res<AssetServer>,
+    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut score: ResMut<Score>,
 ) {
     if !fall_timer.0.tick(time.delta()).just_finished() {
         return;
@@ -289,20 +293,56 @@ pub fn apply_gravity(
 
     let mut shapes: HashMap<u32, Vec<GridPosition>> = HashMap::new();
 
-    // 1. Map shapes and cull entities that fell below 0
+    // 1. Create two sets to safely track the shape lifecycles this frame
+    let mut despawned_shapes = std::collections::HashSet::new();
+    let mut surviving_shapes = std::collections::HashSet::new();
+
+    let splash_layout = TextureAtlasLayout::from_grid(UVec2::new(16, 16), 3, 3, None, None);
+    let layout_handle = layouts.add(splash_layout);
+
     for (entity, pos, id) in &query {
-        if pos.y < 0 {
-            // Delete it from memory and despawn the physical sprite
+        if pos.y < 1 {
             occupied_grid.0.remove(&pos);
             commands.entity(entity).despawn();
+
+            // Mark this shape ID as having lost a block
+            despawned_shapes.insert(id.0);
+
+            let start_x = grid_config.bottom_left.x
+                + (pos.x as f32 * grid_config.tile_size)
+                + (grid_config.tile_size / 2.0);
+            let start_y = grid_config.bottom_left.y
+                + (pos.y as f32 * grid_config.tile_size)
+                + (grid_config.tile_size / 2.0);
+
+            commands.spawn((
+                Sprite {
+                    image: asset_server.load("textures/water_splash_sheet.png"),
+                    custom_size: Some(Vec2::splat(grid_config.tile_size)),
+                    texture_atlas: Some(TextureAtlas {
+                        layout: layout_handle.clone(),
+                        index: 0,
+                    }),
+                    ..default()
+                },
+                Transform::from_xyz(start_x, start_y, 10.0),
+                WaterSplash::default(),
+            ));
         } else {
             shapes.entry(id.0).or_default().push(*pos);
+
+            // Mark this shape ID as still alive
+            surviving_shapes.insert(id.0);
         }
+    }
+
+    // 2. Reduce score ONLY for shapes that lost blocks AND have no surviving blocks
+    for _ in despawned_shapes.difference(&surviving_shapes) {
+        score.0 = score.0.saturating_sub(1);
     }
 
     let mut shapes_to_move = Vec::new();
 
-    // 2. Determine which shapes are allowed to fall
     for (id, tiles) in &shapes {
         let can_fall = tiles.iter().all(|pos| {
             let target_pos = GridPosition {
@@ -310,8 +350,6 @@ pub fn apply_gravity(
                 y: pos.y - 1,
             };
 
-            // RESTORED: Cannot fall if the tile below is occupied...
-            // UNLESS the tile occupying it belongs to this exact same shape.
             if occupied_grid.0.contains(&target_pos) && !tiles.contains(&target_pos) {
                 return false;
             }
@@ -324,16 +362,13 @@ pub fn apply_gravity(
         }
     }
 
-    // 3. Move the valid shapes
     if !shapes_to_move.is_empty() {
-        // Step A: We MUST erase all old positions from the grid memory first
         for (_, pos, id) in &mut query {
             if shapes_to_move.contains(&id.0) {
                 occupied_grid.0.remove(&pos);
             }
         }
 
-        // Step B: Update the actual coordinates and write them back into the grid memory
         for (_, mut pos, id) in &mut query {
             if shapes_to_move.contains(&id.0) {
                 pos.y -= 1;

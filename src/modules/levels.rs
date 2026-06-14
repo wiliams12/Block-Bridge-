@@ -32,6 +32,72 @@ pub struct LevelData {
     pub background_img: String,
 }
 
+#[derive(Component)]
+pub struct WaterSplash {
+    pub timer: Timer,
+    pub frames: usize,
+}
+
+impl Default for WaterSplash {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+            frames: 7,
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct AnimatedWater {
+    pub timer: Timer,
+    pub frames: usize,
+}
+
+impl Default for AnimatedWater {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.4, TimerMode::Repeating),
+            frames: 4,
+        }
+    }
+}
+
+pub fn animate_water(time: Res<Time>, mut query: Query<(&mut Sprite, &mut AnimatedWater)>) {
+    for (mut sprite, mut anim) in &mut query {
+        anim.timer.tick(time.delta());
+
+        if anim.timer.just_finished() {
+            // Safely access the texture atlas attached to the sprite
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                // Move to the next frame, looping back to 0 at the end
+                atlas.index = (atlas.index + 1) % anim.frames;
+            }
+        }
+    }
+}
+
+pub fn animate_splash(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Sprite, &mut WaterSplash)>,
+) {
+    for (entity, mut sprite, mut anim) in &mut query {
+        anim.timer.tick(time.delta());
+
+        if anim.timer.just_finished() {
+            if let Some(atlas) = &mut sprite.texture_atlas {
+                // If we are on the very last frame, delete the entity from the game
+                if atlas.index >= anim.frames - 1 {
+                    commands.entity(entity).despawn();
+                } else {
+                    // Otherwise, just move to the next frame
+                    atlas.index += 1;
+                }
+            }
+        }
+    }
+}
+
 pub fn spawn_level(
     mut commands: Commands,
     mut level_res: ResMut<CurrentLevel>,
@@ -42,6 +108,7 @@ pub fn spawn_level(
     mut next_blocks: ResMut<NextBlocks>,
     mut placement: ResMut<ActivePlacement>,
     score: Res<Score>,
+    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let Ok(window) = window_query.single() else {
         return;
@@ -60,7 +127,6 @@ pub fn spawn_level(
         Ok(json_str) => serde_json::from_str(&json_str).expect("Invalid JSON format"),
         Err(_) => return,
     };
-
     if !level_data.background_img.is_empty() {
         commands.spawn((
             Sprite {
@@ -197,6 +263,38 @@ pub fn spawn_level(
         ],
     ));
 
+    let water_layout = TextureAtlasLayout::from_grid(
+        UVec2::new(16, 16), // Ensure this matches the pixel size of one water frame
+        4,                  // 4 frames of animation
+        1,
+        None,
+        None,
+    );
+    let water_layout_handle = layouts.add(water_layout);
+
+    for x in 0..level_data.columns {
+        let pos = GridPosition { x, y: -1 };
+
+        let start_x = bottom_left.x + (pos.x as f32 * tile_size) + (tile_size / 2.0);
+        let start_y = bottom_left.y + (pos.y as f32 * tile_size) + (tile_size / 2.0);
+
+        commands.spawn((
+            Sprite {
+                image: asset_server.load("textures/water_sheet.png"),
+                custom_size: Some(Vec2::splat(tile_size)),
+                texture_atlas: Some(TextureAtlas {
+                    layout: water_layout_handle.clone(),
+                    index: 0,
+                }),
+                ..default()
+            },
+            Transform::from_xyz(start_x, start_y, -5.0),
+            pos,
+            LevelEntity,
+            AnimatedWater::default(),
+        ));
+    }
+
     next_blocks.0.clear();
 
     placement.shape = get_random_shape();
@@ -310,4 +408,6 @@ pub fn levels_plugin(app: &mut App) {
         Update,
         check_level_completion.run_if(in_state(AppState::InGame)),
     );
+    app.add_systems(Update, animate_water.run_if(in_state(AppState::InGame)));
+    app.add_systems(Update, animate_splash.run_if(in_state(AppState::InGame)));
 }
