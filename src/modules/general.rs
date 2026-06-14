@@ -1,3 +1,4 @@
+use bevy::audio::Volume;
 use bevy::prelude::*;
 
 use serde::{Deserialize, Serialize};
@@ -59,6 +60,8 @@ pub fn spawn_camera(mut commands: Commands) {
 }
 
 pub fn generic_button_hover(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
@@ -66,7 +69,13 @@ pub fn generic_button_hover(
 ) {
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
-            Interaction::Pressed => *color = BackgroundColor(Color::srgb(0.35, 0.35, 0.35)),
+            Interaction::Pressed => {
+                *color = BackgroundColor(Color::srgb(0.35, 0.35, 0.35));
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("audio/button.ogg")), // Use your file name
+                    PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.5)),
+                ));
+            }
             Interaction::Hovered => *color = BackgroundColor(Color::srgb(0.25, 0.25, 0.25)),
             Interaction::None => *color = BackgroundColor(Color::srgb(0.15, 0.15, 0.15)),
         }

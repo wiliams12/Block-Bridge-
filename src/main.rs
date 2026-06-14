@@ -28,6 +28,7 @@ fn main() {
             popup_plugin,
             ui_overlay_plugin,
             game_end_plugin,
+            audio_plugin,
         ))
         .run();
 }

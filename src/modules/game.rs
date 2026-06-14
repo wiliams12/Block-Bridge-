@@ -3,6 +3,8 @@ use bevy::window::PrimaryWindow;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+use bevy::audio::Volume;
+
 use crate::modules::general::*;
 use crate::modules::grid::*;
 use crate::modules::helpers::*;
@@ -152,6 +154,7 @@ pub fn render_hover_block(
     occupied_grid: Res<OccupiedGrid>,
     asset_server: Res<AssetServer>,
     hover_query: Query<Entity, With<HoverTile>>,
+    falling: Res<Falling>,
 ) {
     // 1. Destroy the old ghost tiles from the previous frame
     for entity in &hover_query {
@@ -169,7 +172,7 @@ pub fn render_hover_block(
             pos.x >= 0 && pos.x < grid_config.columns && pos.y >= 0 && pos.y < grid_config.rows;
         let is_free = !occupied_grid.0.contains(pos);
 
-        in_bounds && is_free
+        in_bounds && is_free && !falling.0
     });
 
     let mut color = Color::srgba(1.0, 1.0, 1.0, 0.4);
@@ -223,6 +226,10 @@ pub fn place_block(
         return;
     }
 
+    if falling.0 {
+        return;
+    }
+
     let tiles = placement.get_absolute_tiles();
 
     // Strict Bounds Check: Do nothing if placing off-screen
@@ -273,6 +280,12 @@ pub fn place_block(
     next_blocks.0.push_back(get_random_shape());
     score.0 += 1;
     falling.0 = true;
+
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("audio/place-sound.ogg")),
+        // This guarantees the sound deletes itself when finished
+        PlaybackSettings::DESPAWN.with_volume(Volume::Linear(1.4)),
+    ));
 }
 
 pub fn apply_gravity(
@@ -328,6 +341,11 @@ pub fn apply_gravity(
                 Transform::from_xyz(start_x, start_y, 10.0),
                 WaterSplash::default(),
             ));
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("audio/splash-sound.ogg")),
+                // This guarantees the sound deletes itself when finished
+                PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.1)),
+            ));
         } else {
             shapes.entry(id.0).or_default().push(*pos);
 
@@ -376,6 +394,16 @@ pub fn apply_gravity(
             }
         }
     } else {
+        // --- NEW: IMPACT DETECTION ---
+        // If it was falling previously, but now it can't move, it just hit something!
+        if falling.0 {
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("audio/impact.ogg")), // Use your file name
+                PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.5)),
+            ));
+        }
+        // -----------------------------
+
         falling.0 = false;
     }
 }

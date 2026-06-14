@@ -1,3 +1,4 @@
+pub mod audio;
 pub mod game;
 pub mod game_end;
 pub mod general;
@@ -8,6 +9,7 @@ pub mod main_menu;
 pub mod popup;
 pub mod ui_overlay;
 
+pub use audio::*;
 pub use game::*;
 pub use game_end::*;
 pub use general::*;

@@ -1,4 +1,5 @@
 use crate::modules::game::*;
+use bevy::audio::Volume;
 use bevy::prelude::*;
 
 use crate::modules::general::*;
@@ -96,7 +97,11 @@ pub fn update_score_ui(score: Res<Score>, mut query: Query<&mut Text, With<Score
     }
 }
 
-pub fn spawn_level_complete_overlay(mut commands: Commands) {
+pub fn spawn_level_complete_overlay(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        AudioPlayer::new(asset_server.load("audio/success.ogg")), // Use your file name
+        PlaybackSettings::DESPAWN.with_volume(Volume::Linear(0.2)),
+    ));
     commands
         .spawn((
             Node {
