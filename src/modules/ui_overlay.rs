@@ -74,7 +74,7 @@ pub fn update_next_blocks_ui(
                         ..default()
                     },
                     // Use your exact game texture!
-                    ImageNode::new(asset_server.load("textures/player_block.png")),
+                    ImageNode::new(asset_server.load("textures/player_block0.png")),
                 ))
                 .id();
 

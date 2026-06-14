@@ -1,7 +1,19 @@
 [
   {
+    "initials": "BIT",
+    "score": 244
+  },
+  {
+    "initials": "PIT",
+    "score": 243
+  },
+  {
     "initials": "BES",
     "score": 227
+  },
+  {
+    "initials": "PIK",
+    "score": 150
   },
   {
     "initials": "VUT",
@@ -10,13 +22,5 @@
   {
     "initials": "PPT",
     "score": 126
-  },
-  {
-    "initials": "IDK",
-    "score": 91
-  },
-  {
-    "initials": "PPP",
-    "score": 35
   }
 ]
