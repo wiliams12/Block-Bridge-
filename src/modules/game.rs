@@ -278,7 +278,7 @@ pub fn place_block(
     }
 
     next_blocks.0.push_back(get_random_shape());
-    score.0 += 1;
+    score.0 = score.0.saturating_add(1);
     falling.0 = true;
 
     commands.spawn((
@@ -412,7 +412,8 @@ pub fn apply_gravity(
 pub struct Score(pub u32);
 
 pub fn score_level(num_of_shapes: u32, current_level: u32) -> u32 {
-    (100 / num_of_shapes).pow(current_level)
+    let base = 100 / (num_of_shapes.max(1) + current_level);
+    base.saturating_pow(current_level.min(3))
 }
 
 pub fn game_plugin(app: &mut App) {

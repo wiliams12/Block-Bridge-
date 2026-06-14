@@ -1,0 +1,45 @@
+{
+    "columns": 20,
+    "rows": 16,
+    "tiles": [
+        { "position": { "x": 0, "y": 0 }, "tile_type": "Rock" },
+        { "position": { "x": 1, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 18, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 19, "y": 0 }, "tile_type": "Rock" },
+
+
+        { "position": { "x": 0, "y": 1 }, "tile_type": "DirtTop" },
+        { "position": { "x": 1, "y": 1 }, "tile_type": "DirtTop" },
+        { "position": { "x": 18, "y": 1 }, "tile_type": "DirtTop" },
+        { "position": { "x": 19, "y": 1 }, "tile_type": "DirtTop" },
+
+        { "position": { "x": 7, "y": 0 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 1 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 2 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 3 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 4 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 5 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 6 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 7 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 8 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 9 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 10 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 11 }, "tile_type": "Bricks" },
+        { "position": { "x": 7, "y": 12 }, "tile_type": "Bricks" },
+
+        { "position": { "x": 12, "y": 0 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 1 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 2 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 3 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 4 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 5 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 6 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 7 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 8 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 9 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 10 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 11 }, "tile_type": "Bricks" },
+        { "position": { "x": 12, "y": 12 }, "tile_type": "Bricks" }
+    ],
+    "background_img": "level_7.png"
+}

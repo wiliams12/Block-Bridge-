@@ -1,0 +1,41 @@
+{
+    "columns": 60,
+    "rows": 48,
+    "tiles": [
+        { "position": { "x": 0, "y": 0 }, "tile_type": "Rock" },
+        { "position": { "x": 1, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 2, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 57, "y": 0 }, "tile_type": "Rock" },
+        { "position": { "x": 58, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 59, "y": 0 }, "tile_type": "Dirt" },
+
+        { "position": { "x": 0, "y": 1 }, "tile_type": "Dirt" },
+        { "position": { "x": 1, "y": 1 }, "tile_type": "Dirt" },
+        { "position": { "x": 2, "y": 1 }, "tile_type": "Rock" },
+        { "position": { "x": 57, "y": 1 }, "tile_type": "Dirt" },
+        { "position": { "x": 58, "y": 1 }, "tile_type": "Dirt" },
+        { "position": { "x": 59, "y": 1 }, "tile_type": "Rock" },
+
+        { "position": { "x": 0, "y": 2 }, "tile_type": "Rock" },
+        { "position": { "x": 1, "y": 2 }, "tile_type": "Dirt" },
+        { "position": { "x": 2, "y": 2 }, "tile_type": "Dirt" },
+        { "position": { "x": 57, "y": 2 }, "tile_type": "Rock" },
+        { "position": { "x": 58, "y": 2 }, "tile_type": "Dirt" },
+        { "position": { "x": 59, "y": 2 }, "tile_type": "Dirt" },
+
+        { "position": { "x": 0, "y": 3 }, "tile_type": "Dirt" },
+        { "position": { "x": 1, "y": 3 }, "tile_type": "Dirt" },
+        { "position": { "x": 2, "y": 3 }, "tile_type": "Dirt" },
+        { "position": { "x": 57, "y": 3 }, "tile_type": "Rock" },
+        { "position": { "x": 58, "y": 3 }, "tile_type": "Dirt" },
+        { "position": { "x": 59, "y": 3 }, "tile_type": "Dirt" },
+
+        { "position": { "x": 0, "y": 4 }, "tile_type": "DirtTop" },
+        { "position": { "x": 1, "y": 4 }, "tile_type": "DirtTop" },
+        { "position": { "x": 2, "y": 4 }, "tile_type": "DirtTop" },
+        { "position": { "x": 57, "y": 4 }, "tile_type": "DirtTop" },
+        { "position": { "x": 58, "y": 4 }, "tile_type": "DirtTop" },
+        { "position": { "x": 59, "y": 4 }, "tile_type": "DirtTop" }
+    ],
+    "background_img": "level_10.png"
+}

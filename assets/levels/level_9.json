@@ -1,0 +1,37 @@
+{
+    "columns": 30,
+    "rows": 24,
+    "tiles": [
+        { "position": { "x": 22, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 1 }, "tile_type": "Rock" },
+        { "position": { "x": 22, "y": 2 }, "tile_type": "Rock" },
+        { "position": { "x": 22, "y": 3 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 4 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 5 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 6 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 7 }, "tile_type": "Rock" },
+        { "position": { "x": 22, "y": 8 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 9 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 10 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 11 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 12 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 13 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 14 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 15 }, "tile_type": "Dirt" },
+        { "position": { "x": 22, "y": 16 }, "tile_type": "DirtTop"},
+
+        { "position": { "x": 0, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 0,  "y": 1 }, "tile_type": "DirtTop"},
+        { "position": { "x": 1, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 1,  "y": 1 }, "tile_type": "DirtTop"},
+
+        { "position": { "x": 29, "y": 0 }, "tile_type": "Dirt" },
+        { "position": { "x": 29,  "y": 1 }, "tile_type": "DirtTop"},
+
+        { "position": { "x": 8, "y": 0 }, "tile_type": "Concrete" },
+        { "position": { "x": 8,  "y": 1 }, "tile_type": "Concrete"},
+        { "position": { "x": 8, "y": 2 }, "tile_type": "Concrete" },
+        { "position": { "x": 8,  "y": 3 }, "tile_type": "Concrete"}
+    ],
+    "background_img": "level_9.png"
+}

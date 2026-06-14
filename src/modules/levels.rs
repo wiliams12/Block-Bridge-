@@ -116,7 +116,7 @@ pub fn spawn_level(
 
     occupied_grid.0.clear();
 
-    if level_res.0 > 3 {
+    if level_res.0 > 10 {
         level_res.0 = 1;
         next_state.set(AppState::GameEnd);
         return;
@@ -383,7 +383,9 @@ pub fn check_level_completion(
         },
     ];
     if path_found(&points, &occupied_grid) && !falling.0 {
-        score.0 += score_level(shape_counter.0, level.0);
+        score.0 = score
+            .0
+            .saturating_add(score_level(shape_counter.0, level.0));
         level.0 += 1;
 
         transition_timer.0.reset();
@@ -391,10 +393,15 @@ pub fn check_level_completion(
     }
 }
 
-pub fn cleanup_level(mut commands: Commands, query: Query<Entity, With<LevelEntity>>) {
+pub fn cleanup_level(
+    mut commands: Commands,
+    query: Query<Entity, With<LevelEntity>>,
+    mut shape_counter: ResMut<ShapeCounter>,
+) {
     for entity in &query {
         commands.entity(entity).despawn();
     }
+    shape_counter.0 = 0;
 }
 
 pub fn levels_plugin(app: &mut App) {

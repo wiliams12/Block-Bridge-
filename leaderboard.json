@@ -1,5 +1,13 @@
 [
   {
+    "initials": "CHE",
+    "score": 4294967295
+  },
+  {
+    "initials": "PIX",
+    "score": 417
+  },
+  {
     "initials": "BIT",
     "score": 244
   },
@@ -30,13 +38,5 @@
   {
     "initials": "BIZ",
     "score": 136
-  },
-  {
-    "initials": "VUT",
-    "score": 135
-  },
-  {
-    "initials": "PYT",
-    "score": 134
   }
 ]
